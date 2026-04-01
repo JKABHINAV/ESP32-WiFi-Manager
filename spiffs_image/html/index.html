@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ESP32 Control Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root { --bg: #e2e8f0; --card: #ffffff; --text: #334155; --primary: #3b82f6; --secondary: #8b5cf6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: var(--text); }
+        .card { background: var(--card); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 90%; max-width: 400px; text-align: center; }
+        h1 { margin: 0 0 10px 0; font-size: 24px; color: #1e293b; }
+        
+        /* Status Banner */
+        .status-box { display: inline-flex; align-items: center; background: #f8fafc; padding: 10px 20px; border-radius: 50px; border: 1px solid #e2e8f0; margin-bottom: 30px; font-weight: 600; font-size: 14px; transition: all 0.3s ease; }
+        .dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 10px; background-color: #ef4444; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); animation: pulse 2s infinite; }
+        .dot.connected { background-color: #10b981; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: pulse-green 2s infinite; }
+        
+        /* Buttons */
+        .btn { display: block; width: 100%; padding: 16px; margin: 15px 0; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; text-decoration: none; box-sizing: border-box; }
+        .btn:active { transform: scale(0.98); }
+        .btn-1 { background: linear-gradient(135deg, var(--primary), #2563eb); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .btn-2 { background: linear-gradient(135deg, var(--secondary), #6d28d9); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
+        
+        /* Animations */
+        @keyframes pulse-green { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>WiFi Manager</h1>
+        
+        <div class="status-box" id="statusBox">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">Checking status...</span>
+        </div>
+
+        <p style="font-size: 14px; margin-bottom: 20px;">Select a network to switch to:</p>
+
+        <a href="/switch?id=1" class="btn btn-1">Connect to WiFi 1 (SUN)</a>
+        <a href="/switch?id=2" class="btn btn-2">Connect to WiFi 2 (Android)</a>
+    </div>
+
+    <script>
+        // This function asks the ESP32 for its current status
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                const dot = document.getElementById('statusDot');
+                const text = document.getElementById('statusText');
+
+                if (data.status === 'connected') {
+                    dot.className = 'dot connected'; // Makes it green
+                    text.innerText = 'Connected: ' + data.ssid;
+                } else {
+                    dot.className = 'dot'; // Makes it red
+                    text.innerText = 'Disconnected / Setup Mode';
+                }
+            } catch (error) {
+                console.error("Could not reach ESP32", error);
+            }
+        }
+
+        // Run it immediately when the page loads
+        fetchStatus();
+        
+        // Check the status again every 3 seconds
+        setInterval(fetchStatus, 3000);
+    </script>
+</body>
+</html>
