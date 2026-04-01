@@ -1,2 +1,2 @@
-SUN
-Ramrajjk
+wifi_1_name
+wifi_1_Password
