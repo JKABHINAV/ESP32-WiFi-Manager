@@ -1,2 +1,2 @@
-android
-123456789
+wifi_2_name
+wifi_2_password
